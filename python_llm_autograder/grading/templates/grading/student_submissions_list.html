@@ -1,6 +1,7 @@
 {% extends "grading/base.html" %}
 {%block content %}
 {% load crispy_forms_tags %}
+{% load custom_tags %}
 <style>
     .sticky-header th {
         position: sticky;
@@ -12,7 +13,7 @@
     }
 </style>
 
-<div class="container mt-5">
+<div class="container-fluid mt-5">
     <h1>Submission Batches</h1>
     <div class="table-responsive" style="max-height: calc(100vh - 200px); overflow-y: auto;"></div>
         <table class="table table-bordered table-striped">
@@ -49,7 +50,7 @@
                                 <button type="submit" class="btn btn-primary btn-sm">update</button>
                             </form>
                             {% if updated_submission_pk == submission.pk|stringformat:"s" %}
-                                <h4 id="update-message-{{ submission.pk }}" class="text-success mt-1">Value updated.</h4>
+                                <h5 id="update-message-{{ submission.pk }}" class="text-success mt-1">Value updated.</h5>
                             {% endif %}
                         </div>
                     </td>
@@ -69,7 +70,23 @@
                                 <tr>
                                     <td>{{ test_case }}</td>
                                     <td>{{ feedback.result }}</td>
-                                    <td style="max-width: 200px; overflow-x: auto;">{{ feedback.message }}</td>
+                                    
+                                    <td style="max-width: 200px; overflow-x: auto;">
+                                        {% if feedback.message %}
+                                            {% with feedback_message=feedback.message|parse_json %}
+                                                {% if feedback_message %}
+                                                    <ul class="list-unstyled">
+                                                        <li>{{ feedback_message.msg }}</li>
+                                                        <li  style="color:blue"><strong>Student Output:</strong> {{ feedback_message.student_output }}</li>
+                                                        <li  style="color:rgb(7, 132, 41)"><strong>Model Output:</strong> {{ feedback_message.model_output }}</li>
+                                                        <li  style="color:red"><strong>Student Error:</strong> {{ feedback_message.student_error }}</li>
+                                                    </ul>
+                                                {% else %}
+                                                    {{ feedback.message }}
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

@@ -24,7 +24,7 @@ from django.urls import reverse
 import plotly
 import plotly.express as px
 import pandas as pd
-from django_pandas.io import read_frame
+# from django_pandas.io import read_frame
 # Create your views here.
 class SignUpView(CreateView):
     form_class = CustomUserCreationForm
@@ -69,7 +69,8 @@ def dashboard(request):
             submission_batch__question=question_id,
         )
         if submissions.exists():
-            students_df = read_frame(submissions)
+            data = list(submissions.values())
+            students_df = pd.DataFrame(data)
             charts = generate_charts(students_df)
             mean_score = students_df['actual_score'].mean()
             median_score = students_df['actual_score'].median()
@@ -249,17 +250,17 @@ def upload_materials(request):
             generated_solutions = generate_model_solutions(qn_file_content, grading_rubric_file_content, model_solution_file_content)
             generated_solutions_cleaned = generated_solutions.replace('```python', '').replace('```', '').strip()
 
-            ast_python_code = generate_ast_and_evaluation(model_solution_file_content, generated_solutions_cleaned, qn_file_content, grading_rubric_file_content)
+            # ast_python_code = generate_ast_and_evaluation(model_solution_file_content, generated_solutions_cleaned, qn_file_content, grading_rubric_file_content)
             
-            ast_python_code_cleaned = ast_python_code.replace('```python', '').replace('```', '').strip()
-            # Write ast_python_code_cleaned to a temporary file
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.py') as temp_file:
-                temp_file.write(ast_python_code_cleaned.encode('utf-8'))
-                temp_file_path = temp_file.name
+            # ast_python_code_cleaned = ast_python_code.replace('```python', '').replace('```', '').strip()
+            # # Write ast_python_code_cleaned to a temporary file
+            # with tempfile.NamedTemporaryFile(delete=False, suffix='.py') as temp_file:
+            #     temp_file.write(ast_python_code_cleaned.encode('utf-8'))
+            #     temp_file_path = temp_file.name
 
-            # Save the temporary file to the FileField
-            with open(temp_file_path, 'rb') as temp_file:
-                model_solution.ast_python_code.save(f"{question.qn_code}_ast_python_code.py", ContentFile(temp_file.read()))
+            # # Save the temporary file to the FileField
+            # with open(temp_file_path, 'rb') as temp_file:
+            #     model_solution.ast_python_code.save(f"{question.qn_code}_ast_python_code.py", ContentFile(temp_file.read()))
 
 
             model_solution.model_solution_all_solutions = generated_solutions_cleaned
@@ -303,19 +304,19 @@ def submission_upload(request):
                 messages.warning(request, f'Error reading test cases file: {str(e)}')
                 submission_batch.delete()
                 return redirect('submission-upload')
-            print(test_cases)
+            # print(test_cases)
             # Get the list of Python file paths
             zip_file_path = submission_batch.student_submissions_zip.path
             python_file_paths, temp_dir = get_python_file_paths(zip_file_path)
             model_solution = ModelSolution.objects.get(question=submission_batch.question).model_solution.path
             # Execute the student code for each Python file
-            print(model_solution)
+            # print(model_solution)
             # Dynamically import the grading rubric module
             grading_rubric_path = submission_batch.question.grading_rubric.path
             spec = importlib.util.spec_from_file_location("grading_rubric", grading_rubric_path)
             grading_rubric_module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(grading_rubric_module)
-            print(grading_rubric_path)
+            # print(grading_rubric_path)
             # Access the new_rubrics from the imported module
             new_rubrics = grading_rubric_module.new_rubrics
 
@@ -325,8 +326,8 @@ def submission_upload(request):
             spec_ast = importlib.util.spec_from_file_location("ast_python_solution", ast_python_solution_path)
             ast_python_solution_module = importlib.util.module_from_spec(spec_ast)
             spec_ast.loader.exec_module(ast_python_solution_module)
-            print(ast_python_solution_path)
-            print(dir(ast_python_solution_module))
+            # print(ast_python_solution_path)
+            # print(dir(ast_python_solution_module))
             import inspect
 
             for name in dir(ast_python_solution_module):
@@ -358,13 +359,23 @@ def submission_upload(request):
                     student_output, student_error = execute_student_code(file_path, user_inputs)
                     model_output, model_error = execute_student_code(model_solution, user_inputs)
                     count += 1
+                    print('---------------NEW------------------')
+                    print(file_path)
+                    print(f"{student_output}")
+                    print('-------------------------------------')
+                    print(f"{student_error}")
+                    print('-------------------------------------')
+                    print(f"{model_output}")
+                    print('-------------------------------------')
+                    print(f"{student_output == model_output}")
+                    print('--------------END NEW-------------------')
                     if student_output == model_output:
                         student.test_cases_passed += 1
                         test_cases_feedback[f"Test Case {count}"]["result"] = "Pass"
                         test_cases_feedback[f"Test Case {count}"]["message"] = ""
                     else:
                         test_cases_feedback[f"Test Case {count}"]["result"] = "Failed"
-                        test_cases_feedback[f"Test Case {count}"]["message"] = f"Output dosent match.{student_output},{model_output},{student_error}"
+                        test_cases_feedback[f"Test Case {count}"]["message"] = json.dumps({"msg":"Output dosent match",'student_output':student_output,'model_output':model_output,'student_error':student_error})
                 student.test_cases_feedback = test_cases_feedback   
                 ##########################################################################
                 if not gpt_startup:
@@ -385,8 +396,8 @@ def submission_upload(request):
 
                 #####################################################################
                 # Access the evaluate_code_ast function from the imported module
-                print(type(student_code))   
-                print(f"##########################This is student code:{student_code} \n\n################")
+                # print(type(student_code))   
+                # print(f"##########################This is student code:{student_code} \n\n################")
                 evaluate_code_ast = ast_python_solution_module.evaluate_code_ast(student_code,new_rubrics)
                 student.question_specific_feedback = {
                                                         'Total': evaluate_code_ast['Total'],
@@ -475,7 +486,23 @@ def model_solution_generator(request, pk):
         form = AllModelSolutionForm(request.POST, instance=model_solution)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Model solutions updated successfully.')
+            #################################################################
+            ast_python_code = generate_ast_and_evaluation(get_1_file_content(model_solution.model_solution.path),
+                                                        model_solution.model_solution_all_solutions, 
+                                                        get_1_file_content(model_solution.question.question_file.path),
+                                                        get_1_file_content(model_solution.question.grading_rubric.path))
+            
+            ast_python_code_cleaned = ast_python_code.replace('```python', '').replace('```', '').strip()
+            # Write ast_python_code_cleaned to a temporary file
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.py') as temp_file:
+                temp_file.write(ast_python_code_cleaned.encode('utf-8'))
+                temp_file_path = temp_file.name
+
+            # Save the temporary file to the FileField
+            with open(temp_file_path, 'rb') as temp_file:
+                model_solution.ast_python_code.save(f"{model_solution.question.qn_code}_ast_python_code.py", ContentFile(temp_file.read()))
+            #################################################################
+            messages.success(request, 'Model solutions and AST code updated successfully.')
             return redirect('model-solution-generator', pk=model_solution.pk)
     else:
         form = AllModelSolutionForm(instance=model_solution)

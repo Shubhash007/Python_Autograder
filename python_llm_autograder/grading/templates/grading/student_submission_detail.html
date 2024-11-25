@@ -1,6 +1,7 @@
 {% extends "grading/base.html" %}
 {%block content %}
 {% load crispy_forms_tags %}
+{% load custom_tags %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/monokai.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
@@ -38,7 +39,23 @@
                     <tr>
                         <td>{{ test_case }}</td>
                         <td>{{ feedback.result }}</td>
-                        <td style="max-width: 200px; overflow-x: auto;">{{ feedback.message }}</td>
+                        
+                        <td style="max-width: 200px; overflow-x: auto;">
+                            {% if feedback.message %}
+                                {% with feedback_message=feedback.message|parse_json %}
+                                    {% if feedback_message %}
+                                        <ul class="list-unstyled">
+                                            <li>{{ feedback_message.msg }}</li>
+                                            <li  style="color:blue"><strong>Student Output:</strong> {{ feedback_message.student_output }}</li>
+                                            <li  style="color:rgb(7, 132, 41)"><strong>Model Output:</strong> {{ feedback_message.model_output }}</li>
+                                            <li  style="color:red"><strong>Student Error:</strong> {{ feedback_message.student_error }}</li>
+                                        </ul>
+                                    {% else %}
+                                        {{ feedback.message }}
+                                    {% endif %}
+                                {% endwith %}
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

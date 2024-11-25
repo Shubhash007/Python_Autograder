@@ -171,6 +171,7 @@ def execute_student_code(file_path, user_inputs):
             # Communicate with the subprocess
             output, error = process.communicate(input=user_inputs, timeout=20)
             output = output.strip()
+            print("FROM UTILS.PY:", output, "#####################")
             error = error.strip()
         except subprocess.TimeoutExpired:
             # Timeout: Terminate the process and its children
@@ -180,6 +181,7 @@ def execute_student_code(file_path, user_inputs):
     except Exception as e:
         output = ''
         error = f'An error occurred: {e}'
+        return output, error
     
     return output, error
 
@@ -267,8 +269,8 @@ def calculate_suggested_score(test_cases_passed,test_cases_total,partial_mark,to
     # # if all test cases pass, test case score is the input from Terence, otherwise 0
     # # if proportion_of_passed_test_cases == 1:
     # #     test_case_score = actual_score     # in this scenario, student got 0 for test case score
-    # final_suggested_score = 0
-    # needs_manual_review = False
+    final_suggested_score = 0
+    needs_manual_review = False
 
     # if test_case_score == 0:
     #     final_suggested_score = partial_mark # if 1 test case fail, assign partial marks as suggested. Thus student gets 3 marks.

@@ -1,16 +1,18 @@
 from openai import OpenAI
 import os
 import json
+from dotenv import load_dotenv
 
 # from Upload_question import new_question
 # from Upload_rubrics import *
 # from edge_cases import *
-
+load_dotenv()
 # Initialize the OpenAI client
 client = OpenAI(
-    organization='org-XLijThPBurmZ0BR1viARHkJS',
-    project='proj_6sdmUtDBFQ7q9R0Plz5bJioo',
-    api_key="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"
+    organization=os.getenv('OPENAI_ORG_ID'),
+    project=os.getenv('OPENAI_PROJECT_ID'),
+    api_key=os.getenv('OPENAI_API_KEY')
+    
 )
 
 # # Function to read the model solution from a file
