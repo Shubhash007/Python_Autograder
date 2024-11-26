@@ -3,12 +3,15 @@ import pprint
 import os
 import json
 from pydantic import BaseModel
+from dotenv import load_dotenv
 
+load_dotenv()
 client = OpenAI(
-    organization='org-XLijThPBurmZ0BR1viARHkJS',
-    project='proj_6sdmUtDBFQ7q9R0Plz5bJioo',
-    api_key = "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"
+    organization=os.getenv('OPENAI_ORG_ID'),
+    project=os.getenv('OPENAI_PROJECT_ID'),
+    api_key=os.getenv('OPENAI_API_KEY')    
 )
+
 class Code(BaseModel):
     line_number: int
     code: str
