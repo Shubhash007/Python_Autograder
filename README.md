@@ -55,7 +55,7 @@ These tools are used for API interactions and data visualization.
 
 | **Technology**           | **Purpose**                                               |
 |--------------------------|----------------------------------------------------------|
-| ![GPT-4o](https://img.shields.io/badge/GPT--4o-API-000000?logo=openai&logoColor=white) | One-Shot, Few-Shot LLM prompting to evlauate student solution againt model answer|
+| ![GPT-4o](https://img.shields.io/badge/GPT--4o-API-000000?logo=openai&logoColor=white) | One-Shot, Few-Shot LLM prompting to evaluate student solution againt model answer|
 | ![Plotly](https://img.shields.io/badge/Plotly-Data%20Visualization-3F4F75?logo=plotly&logoColor=white) | Creates interactive and dynamic data visualizations.      |
 | ![pandas](https://img.shields.io/badge/pandas-Data%20Analysis-150458?logo=pandas&logoColor=white) | Facilitates data manipulation and analysis.                |
 
